@@ -73,13 +73,15 @@ def default_ext() -> str:
 
 def current_executable() -> str:
     """Path of the running program, used as the default upgrade target."""
-    if getattr(sys, "frozen", False) or not sys.argv or not sys.argv[0] or sys.argv[0] == "-c":
+    if getattr(sys, "frozen", False):
         return os.path.realpath(sys.executable)
+    if not sys.argv or not sys.argv[0] or sys.argv[0] in ("-c", "-m"):
+        return ""
     return os.path.realpath(sys.argv[0])
 
 
 def default_program() -> str:
-    name = os.path.basename(current_executable())
+    name = os.path.basename(current_executable()) or "python"
     ext = default_ext()
     if ext and name.lower().endswith("." + ext):
         name = name[: -(len(ext) + 1)]

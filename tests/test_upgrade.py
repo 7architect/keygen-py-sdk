@@ -299,3 +299,17 @@ class TestPlatform:
         assert _platform.current_platform() == "linux/arm64"
         monkeypatch.setattr(_platform.platform, "machine", lambda: "")
         assert _platform.current_arch() == "unknown"
+
+
+def test_install_refuses_to_guess_target(api, platform, monkeypatch):
+    monkeypatch.setattr("keygen.release.current_executable", lambda: "")
+    serve(api)
+    with pytest.raises(keygen.UpgradeInstallError, match="explicit install target"):
+        keygen.upgrade("1.0.0").install()
+
+
+def test_interactive_session_has_no_executable(monkeypatch):
+    monkeypatch.setattr(_platform.sys, "argv", [""])
+    monkeypatch.delattr(_platform.sys, "frozen", raising=False)
+    assert _platform.current_executable() == ""
+    assert _platform.default_program() == "python"

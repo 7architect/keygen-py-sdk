@@ -153,7 +153,12 @@ class Release:
             except ValueError as err:
                 raise errors.ArtifactSignatureInvalidError() from err
 
-        path = os.path.realpath(target or current_executable())
+        target = target or current_executable()
+        if not target:
+            raise errors.UpgradeInstallError(
+                "the running program could not be determined, pass an explicit install target"
+            )
+        path = os.path.realpath(target)
         directory, name = os.path.split(path)
 
         try:

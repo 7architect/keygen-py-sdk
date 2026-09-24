@@ -239,3 +239,11 @@ class TestMachine:
         api.error = requests.Timeout("slow")
         with pytest.raises(keygen.NetworkError):
             keygen.Machine(id="mach-1").ping()
+
+
+def test_spawn_keeps_process_when_first_ping_fails(api):
+    api.add("POST", r"/processes$", (201, {}, {"data": process_resource()}))
+    api.add("POST", r"/processes/proc-1/actions/ping$", (500, {}, ""))
+    with pytest.raises(keygen.APIError) as info:
+        keygen.Machine(id="mach-1").spawn(1)
+    assert info.value.process.id == "proc-1"

@@ -150,7 +150,11 @@ class Machine:
         response = Client().post("processes", body)
         process = Process.from_resource(expect_resource(response, "process"))
         process.machine_id = process.machine_id or self.id
-        process.monitor(on_error)
+        try:
+            process.monitor(on_error)
+        except Exception as err:
+            err.process = process
+            raise
         return process
 
     def processes(self) -> List[Process]:

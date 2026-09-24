@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Mapping, Optional
@@ -35,8 +36,10 @@ def parse_time(value: Any) -> Optional[datetime]:
     else:
         sign = 1 if tz[0] == "+" else -1
         digits = tz[1:].replace(":", "")
-        offset = timedelta(hours=int(digits[:2]), minutes=int(digits[2:]))
-        tzinfo = timezone(sign * offset)
+        hours, minutes = int(digits[:2]), int(digits[2:])
+        if hours > 23 or minutes > 59:
+            return None
+        tzinfo = timezone(sign * timedelta(hours=hours, minutes=minutes))
 
     try:
         parsed = datetime.strptime(f"{match.group('date')}T{clock}", "%Y-%m-%dT%H:%M:%S")
@@ -56,7 +59,7 @@ def as_int(value: Any) -> int:
     if isinstance(value, int):
         return value
     if isinstance(value, float):
-        return int(value)
+        return int(value) if math.isfinite(value) else 0
     if isinstance(value, str):
         try:
             return int(value.strip())

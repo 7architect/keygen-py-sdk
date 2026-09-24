@@ -97,6 +97,12 @@ class _KeygenModule(types.ModuleType):
         else:
             super().__setattr__(name, value)
 
+    def __delattr__(self, name: str) -> None:
+        if name in Settings.FIELDS:
+            setattr(settings, name, getattr(Settings(), name))
+        else:
+            super().__delattr__(name)
+
     def __dir__(self) -> list:
         return sorted(set(super().__dir__()) | set(Settings.FIELDS))
 

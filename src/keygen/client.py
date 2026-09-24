@@ -254,7 +254,7 @@ class Client:
                 count=_header_int(response.headers, "X-RateLimit-Count"),
                 limit=_header_int(response.headers, "X-RateLimit-Limit"),
                 remaining=_header_int(response.headers, "X-RateLimit-Remaining"),
-                reset=datetime.fromtimestamp(reset_at, timezone.utc) if reset_at > 0 else None,
+                reset=_timestamp(reset_at),
                 retry_after=_header_int(response.headers, "Retry-After"),
             )
 
@@ -285,6 +285,8 @@ class Client:
                 raise
 
         if response.status == 204 or response.size == 0:
+            if response.status == 404:
+                raise errors.NotFoundError(response=response)
             if response.status >= 400:
                 raise errors.APIError(response=response)
             return response
@@ -306,17 +308,32 @@ class Client:
         if isinstance(api_errors, list) and api_errors:
             raise _map_error(response, _first_error(document))
 
+        if response.status == 404:
+            raise errors.NotFoundError(response=response)
         if response.status >= 400:
             raise errors.APIError(response=response)
 
         return response
 
 
+def _timestamp(seconds: int) -> Optional[datetime]:
+    if seconds <= 0:
+        return None
+    try:
+        return datetime.fromtimestamp(seconds, timezone.utc)
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
+def _reject_constant(name: str) -> Any:
+    raise ValueError(f"unsupported JSON constant {name}")
+
+
 def _try_json(body: bytes) -> Any:
     if not body:
         return None
     try:
-        return json.loads(body.decode("utf-8"))
+        return json.loads(body.decode("utf-8"), parse_constant=_reject_constant)
     except (UnicodeDecodeError, ValueError):
         return None
 

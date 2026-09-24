@@ -398,3 +398,40 @@ class TestWebhooks:
         keygen.max_clock_drift = None
         with pytest.raises(keygen.PublicKeyMissingError):
             keygen.verify_webhook("POST", self.URL, self.headers(), fixtures.WEBHOOK_BODY)
+
+
+class TestEdgeCases:
+    def test_module_config_supports_mock_patch(self):
+        from unittest import mock
+
+        keygen.account = "original"
+        with mock.patch.object(keygen, "account", "patched"):
+            assert keygen.account == "patched"
+        assert keygen.account == ""
+        del keygen.product
+        assert keygen.product == ""
+
+    def test_out_of_range_rate_limit_reset(self, api):
+        api.add("GET", r"/me$", (429, {"X-RateLimit-Reset": "99999999999999"}, ""))
+        with pytest.raises(keygen.RateLimitError) as info:
+            Client().get("me")
+        assert info.value.reset is None
+
+    def test_non_finite_json_numbers(self, api):
+        api.add("GET", r"/me$", (200, {}, '{"data":{"id":"1","type":"licenses","attributes":{"cores":Infinity}}}'))
+        with pytest.raises(keygen.APIError, match="JSON"):
+            Client().get("me")
+
+    @pytest.mark.parametrize("body", ["", {"meta": {}}])
+    def test_404_without_errors_is_not_found(self, api, body):
+        api.add("GET", r"/me$", (404, {}, body))
+        with pytest.raises(keygen.NotFoundError):
+            Client().get("me")
+
+    @pytest.mark.parametrize("value", ["2024-01-01T00:00:00+24:00", "2024-01-01T00:00:00+05:99"])
+    def test_invalid_timezone_offsets(self, value):
+        from keygen._jsonapi import as_int, parse_time
+
+        assert parse_time(value) is None
+        assert parse_time("2024-01-01T00:00:00+05:30").utcoffset() == timedelta(hours=5, minutes=30)
+        assert as_int(float("inf")) == 0 and as_int(float("nan")) == 0
