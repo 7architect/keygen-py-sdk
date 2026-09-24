@@ -1,9 +1,10 @@
 # Keygen Python SDK
 
 Package `keygen` lets Python programs license and remotely update themselves using the
-[keygen.sh](https://keygen.sh) service. It is a Python port of the official
+[keygen.sh](https://keygen.sh) service. It is an unofficial Python port of the
 [Keygen Go SDK](https://github.com/keygen-sh/keygen-go) and follows the same concepts,
-with names adapted to Python conventions.
+with names adapted to Python conventions. It is not affiliated with or endorsed by
+Keygen LLC.
 
 ## Installing
 
@@ -591,6 +592,17 @@ The API mirrors the Go SDK, with these deliberate changes:
 - Response and webhook signatures are checked against the `Keygen-Date` and
   `Keygen-Digest` headers when present. Proxies in front of self-hosted Keygen may
   rewrite `Date`, which makes signature checks fail now and then when only `Date` is used.
+
+## Releasing
+
+Releases are published to PyPI by `.github/workflows/publish.yml` through PyPI trusted
+publishing, so no API token is stored anywhere.
+
+1. Set the new version in `src/keygen/_config.py` (`SDK_VERSION`), commit and push.
+2. Create a GitHub release with a tag matching that version, e.g. `v1.0.1`.
+
+The workflow runs the tests, checks that the tag matches the package version, builds
+the wheel and the source archive, and uploads them to PyPI.
 
 ## Development
 
