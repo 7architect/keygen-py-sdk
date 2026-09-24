@@ -588,12 +588,24 @@ The API mirrors the Go SDK, with these deliberate changes:
   the artifact size and checksum are checked before the swap.
 - Malformed license keys, certificates and signature headers raise errors instead of
   crashing.
+- Response and webhook signatures are checked against the `Keygen-Date` and
+  `Keygen-Digest` headers when present. Proxies in front of self-hosted Keygen may
+  rewrite `Date`, which makes signature checks fail now and then when only `Date` is used.
 
 ## Development
 
 ```
 pip install -e ".[test]"
 pytest
+```
+
+End to end tests in `tests/test_live.py` run against a real Keygen server when
+`KEYGEN_HOST` and `KEYGEN_ADMIN_TOKEN` are set. They create a throwaway product,
+policy, entitlement and license, run the SDK against them with the license key, and
+delete everything afterwards. Set `KEYGEN_ACCOUNT_ID` too when using api.keygen.sh.
+
+```
+KEYGEN_HOST=https://api.example.com KEYGEN_ADMIN_TOKEN=admin-... pytest tests/test_live.py
 ```
 
 ## License

@@ -180,13 +180,13 @@ def _verify_http_signature(
 
     lookup = _Headers(headers)
 
-    digest_header = lookup.get("Digest")
+    digest_header = lookup.get("Keygen-Digest") or lookup.get("Digest")
     if not digest_header:
         raise e["missing_digest"]()
     if not _digest_matches(digest_header, body):
         raise e["invalid_digest"]()
 
-    date = lookup.get("Date")
+    date = lookup.get("Keygen-Date") or lookup.get("Date")
     if not date:
         raise e["missing_date"]()
     try:

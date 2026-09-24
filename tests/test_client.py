@@ -322,6 +322,33 @@ class TestResponseSignatures:
         with pytest.raises(error):
             Client().get("me")
 
+    def test_keygen_date_wins_over_proxy_date(self, api):
+        from datetime import datetime, timezone
+
+        keys = Keys()
+        keygen.public_key = keys.ed25519_public
+        body = json.dumps({"data": license_resource()}).encode()
+        signed_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+        headers = signed_headers(keys, "GET", "https://api.keygen.sh/v1/accounts/acct/me", body, date=http_date(signed_at))
+        headers["Keygen-Date"] = headers["Date"]
+        headers["Keygen-Digest"] = headers["Digest"]
+        headers["Date"] = http_date()
+        api.add("GET", r"/me$", (200, headers, body))
+        Client().get("me")
+
+    def test_proxy_date_alone_fails(self, api):
+        from datetime import datetime, timezone
+
+        keys = Keys()
+        keygen.public_key = keys.ed25519_public
+        body = json.dumps({"data": license_resource()}).encode()
+        signed_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+        headers = signed_headers(keys, "GET", "https://api.keygen.sh/v1/accounts/acct/me", body, date=http_date(signed_at))
+        headers["Date"] = http_date()
+        api.add("GET", r"/me$", (200, headers, body))
+        with pytest.raises(keygen.ResponseSignatureInvalidError):
+            Client().get("me")
+
     def test_clock_drift_window(self, api):
         from datetime import datetime, timezone
 
