@@ -1,3 +1,17 @@
+<div align="center">
+    
+[![PyPI Downloads](https://camo.githubusercontent.com/02e600cb06ee0c1ca64fba89d5db12d0c63809f383cbe3070c45f2aa70d9a374/68747470733a2f2f6b657967656e2e73682f696d616765732f6c6f676f2d70696c6c2e706e67)](https://github.com/keygen-sh)
+
+</div>
+
+<div align="center">
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=7architectkeygen-py-sdk)
+![PyPI Downloads](https://img.shields.io/pypi/dw/keygen-sdk)
+[![CI](https://github.com/7architect/keygen-py-sdk/actions/workflows/test.yml/badge.svg)](https://github.com/7architect/keygen-py-sdk/actions)
+
+</div>
+
 # Keygen Python SDK
 
 Package `keygen` lets Python programs license and remotely update themselves using the
