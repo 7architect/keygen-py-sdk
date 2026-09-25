@@ -15,6 +15,8 @@
 
 # Keygen Python SDK (Unofficial)
 
+> This is port from go sdk https://github.com/keygen-sh/keygen-go
+
 Package `keygen` lets Python programs license and remotely update themselves using the
 [keygen.sh](https://keygen.sh) service. It is an unofficial Python port of the
 [Keygen Go SDK](https://github.com/keygen-sh/keygen-go) and follows the same concepts,
